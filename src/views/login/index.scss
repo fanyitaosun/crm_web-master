@@ -15,6 +15,9 @@
   @media screen and (max-width: 1550px) {
     padding: 0 40px;
   }
+  @media screen and (max-width: 768px) {
+    padding: 0 24px;
+  }
 }
 
 .login-from {
@@ -115,6 +118,17 @@
       // }
     }
   }
+  @media screen and (max-width: 768px) {
+    padding: 0 24px;
+    .el-form-item {
+      margin-bottom: 12px;
+      .el-input {
+        /deep/ .el-input__inner {
+          padding: 0 12px;
+        }
+      }
+    }
+  }
 }
 
 // error message
@@ -152,6 +166,13 @@
   //   padding: 0 40px;
   //   margin-top: 10px;
   // }
+}
+
+@media screen and (max-width: 768px) {
+  .error-info {
+    padding: 0 24px;
+    margin-top: 12px;
+  }
 }
 
 
@@ -268,6 +289,17 @@
   // @media screen and (max-width: 1550px) {
   //   margin-top: 10px;
   // }
+}
+
+@media screen and (max-width: 768px) {
+  .control {
+    padding: 0 24px;
+    .btn {
+      height: 46px;
+      font-size: 18px;
+      line-height: 46px;
+    }
+  }
 }
 
 // 图片验证码

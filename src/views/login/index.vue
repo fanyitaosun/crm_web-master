@@ -1,5 +1,6 @@
 <template>
   <div
+    :class="{ 'is-mobile': isMobile }"
     class="login-wrapper">
     <div class="top-nav">
       <img
@@ -7,7 +8,9 @@
         alt="">
     </div>
     <div class="container">
-      <div class="left">
+      <div
+        class="left"
+        :class="{ 'is-hidden': isMobile && !showIntroPanel }">
 
         <h2 class="mini-title">
           易优客户关系管理系统
@@ -19,14 +22,36 @@
       </div>
       <div class="right">
         <div class="login-main-content">
+          <div
+            v-if="isMobile"
+            class="mobile-toggle">
+            <button
+              class="mobile-toggle__btn"
+              @click="toggleIntro">
+              {{ showIntroPanel ? '隐藏介绍' : '查看系统介绍' }}
+            </button>
+          </div>
           <div class="logo-box">
             {{ titleMap[activeCom] }}
+          </div>
+
+          <div class="tab-switch">
+            <button
+              v-for="item in tabs"
+              :key="item.value"
+              :class="['tab-switch__btn', { active: activeCom === item.value }]"
+              type="button"
+              @click="handleTabChange(item.value)">
+              {{ item.label }}
+            </button>
           </div>
 
           <component
             :is="activeCom"/>
 
-          <div class="use-tip">
+          <div
+            v-if="activeCom === 'LoginByPwd'"
+            class="use-tip">
             <div>
               <span class="text">建议使用</span>
               <img src="~@/assets/login/chrome.png" alt="" class="icon">
@@ -56,24 +81,53 @@
 
 <script>
 import LoginByPwd from './component/LoginByPwd'
+import LoginQuickGuide from './component/LoginQuickGuide'
 
 export default {
   name: 'Login',
   components: {
-    LoginByPwd
+    LoginByPwd,
+    LoginQuickGuide
   },
   data() {
     return {
       activeCom: 'LoginByPwd',
+      tabs: [
+        { label: '账号登录', value: 'LoginByPwd' },
+        { label: '使用帮助', value: 'LoginQuickGuide' }
+      ],
+      isMobile: false,
+      showIntroPanel: true,
       titleMap: {
-        LoginByPwd: '欢迎登录'
+        LoginByPwd: '欢迎登录',
+        LoginQuickGuide: '使用帮助'
       }
     }
   },
   watch: {},
   created() {
   },
-  methods: {}
+  mounted() {
+    this.handleResize()
+    window.addEventListener('resize', this.handleResize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+  },
+  methods: {
+    handleResize() {
+      this.isMobile = window.innerWidth <= 768
+      if (!this.isMobile) {
+        this.showIntroPanel = true
+      }
+    },
+    handleTabChange(componentName) {
+      this.activeCom = componentName
+    },
+    toggleIntro() {
+      this.showIntroPanel = !this.showIntroPanel
+    }
+  }
 }
 </script>
 
@@ -235,6 +289,21 @@ export default {
         background-color: white;
         border-radius: 6px;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        .mobile-toggle {
+          padding: 16px 20px 0;
+          display: flex;
+          justify-content: flex-end;
+          &__btn {
+            border: none;
+            background: transparent;
+            color: #3e6bea;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 10px;
+          }
+        }
         .logo-box {
           position: relative;
           width: 100%;
@@ -255,6 +324,31 @@ export default {
             background-color: #3e6bea;
             border-radius: 2px;
             display: block;
+          }
+        }
+        .tab-switch {
+          display: flex;
+          padding: 0 40px 20px;
+          gap: 12px;
+          &__btn {
+            flex: 1;
+            height: 40px;
+            border-radius: 20px;
+            border: 1px solid #d6dcff;
+            background: #f5f7ff;
+            color: #3e6bea;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            &:hover {
+              background: #e9edff;
+            }
+            &.active {
+              background: #3e6bea;
+              color: white;
+              border-color: #3e6bea;
+              box-shadow: 0 6px 16px rgba(62, 107, 234, 0.25);
+            }
           }
         }
         .use-tip {
@@ -306,6 +400,73 @@ export default {
 
     @media screen and (max-width: 1550px) {
       margin-top: -20px;
+    }
+  }
+}
+
+.login-wrapper.is-mobile {
+  background-position: top center;
+  .top-nav {
+    padding: 16px 20px 0;
+    justify-content: center;
+    img {
+      width: 140px;
+      height: auto;
+    }
+  }
+  .container {
+    flex-direction: column;
+    margin-top: 0;
+    padding: 20px 16px 40px;
+    .left {
+      order: 2;
+      width: 100%;
+      text-align: center;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      max-height: 520px;
+      opacity: 1;
+      &.is-hidden {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+      }
+      .mini-title {
+        margin-left: 0;
+        font-size: 22px;
+      }
+      .main-pic {
+        width: 90%;
+        max-width: 420px;
+        margin: 10px auto 0;
+      }
+    }
+    .right {
+      order: 1;
+      width: 100%;
+      margin-left: 0;
+      .login-main-content {
+        height: auto;
+        padding-bottom: 70px;
+        .logo-box {
+          padding: 0 24px;
+          margin: 10px 0 16px;
+          &:before {
+            left: 12px;
+          }
+        }
+        .tab-switch {
+          padding: 0 24px 12px;
+          gap: 10px;
+          &__btn {
+            height: 36px;
+            font-size: 13px;
+          }
+        }
+        .use-tip {
+          position: static;
+          padding: 20px 0;
+        }
+      }
     }
   }
 }
