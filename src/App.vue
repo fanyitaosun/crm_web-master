@@ -115,6 +115,11 @@ export default {
         const dpr = window.devicePixelRatio || 1
         const clientWidth = document.body.clientWidth
         const dom = document.getElementById('app')
+        if (clientWidth < 1024) {
+          dom.style.minWidth = 'auto'
+          dom.style.minHeight = '100%'
+          return
+        }
         if (dpr !== 1 && clientWidth > 1600) {
           dom.style.minHeight = '800px'
         } else if (dpr === 1 && clientWidth > 1600) {
@@ -136,5 +141,12 @@ export default {
   height: 100%;
   min-width: 1200px;
   min-height: 605px;
+}
+
+@media (max-width: 1023px) {
+  #app {
+    min-width: auto;
+    min-height: 100vh;
+  }
 }
 </style>

@@ -1,5 +1,9 @@
 <template>
-  <div class="navbar">
+  <div class="navbar-wrapper">
+    <!-- PC 布局导航 -->
+    <div
+      v-if="!isMobileLayout"
+      class="navbar navbar--desktop">
     <img
       v-src="logo"
       :key="logo"
@@ -44,12 +48,6 @@
         @click="checkMessageDetail(false)"/>
     </el-badge>
 
-    <system-message
-      :visible.sync="sysMessageShow"
-      :unread-nums="unreadNums"
-      :only-announcement="mesOnlyAnnouncement"
-      @update-count="sendSystemUnreadNum"/>
-
     <el-dropdown
       trigger="click"
       @command="moreMenuClick">
@@ -87,8 +85,91 @@
       </el-dropdown-menu>
     </el-dropdown>
 
+    </div>
+
+    <!-- Mobile 布局导航 -->
+    <div
+      v-else
+      class="navbar-mobile">
+      <div class="mobile-left">
+        <i
+          class="wk wk-menu mobile-menu-icon"
+          @click="$emit('toggle-mobile-menu')" />
+        <img
+          v-src="logo"
+          :key="logo"
+          class="logo"
+          @click="enterCustoemBoard">
+      </div>
+      <div class="mobile-title">{{ mobileDisplayTitle }}</div>
+      <div class="mobile-actions">
+        <el-button
+          v-if="showMobileQuickAdd"
+          type="primary"
+          size="mini"
+          class="mobile-quick-add"
+          @click="handleMobileQuickAdd">快速创建</el-button>
+        <el-badge
+          :value="unreadNums.announceCount"
+          :hidden="!unreadNums.announceCount || unreadNums.announceCount == 0"
+          :max="99">
+          <i
+            class="wk wk-announcement"
+            @click="checkMessageDetail(true)"/>
+        </el-badge>
+        <el-badge
+          :value="unreadNums.allCount"
+          :hidden="!unreadNums.allCount || unreadNums.allCount == 0"
+          :max="99">
+          <i
+            class="wk wk-bell"
+            @click="checkMessageDetail(false)"/>
+        </el-badge>
+        <el-dropdown
+          trigger="click"
+          @command="moreMenuClick">
+          <div class="user-container">
+            <template v-if="userInfo && Object.keys(userInfo).length > 0">
+              <xr-avatar
+                :name="userInfo.realname"
+                :size="32"
+                :src="userInfo.img"
+                class="user-img" />
+            </template>
+            <i class="el-icon-caret-bottom mark"/>
+          </div>
+          <el-dropdown-menu
+            slot="dropdown"
+            class="el-dropdown-unarrow" >
+            <el-dropdown-item
+              v-for="(item, index) in moreMenu"
+              :key="index"
+              :command="item.command"
+              :divided="item.divided"
+              :icon="item.icon"
+              :disabled="item.disabled"
+            >{{ item.label }}</el-dropdown-item>
+            <div
+              v-if="manage"
+              class="handel-box">
+              <el-button
+                type="primary"
+                class="handel-button"
+                @click="enterSystemSet()">企业管理后台</el-button>
+            </div>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+    </div>
+
+    <system-message
+      :visible.sync="sysMessageShow"
+      :unread-nums="unreadNums"
+      :only-announcement="mesOnlyAnnouncement"
+      @update-count="sendSystemUnreadNum"/>
+
     <nav-manager
-      v-if="navManagerShow"
+      v-if="!isMobileLayout && navManagerShow"
       ref="navManager"
       :collapse="collapse"
       :top-module="items"
@@ -118,6 +199,18 @@ export default {
       type: [Number, String],
       default: 0
       // authRedirect: ''
+    },
+    isMobileLayout: {
+      type: Boolean,
+      default: false
+    },
+    mobileTitle: {
+      type: String,
+      default: ''
+    },
+    showMobileQuickAdd: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -262,12 +355,29 @@ export default {
       }
 
       return tempsItems
+    },
+    mobileDisplayTitle() {
+      if (this.mobileTitle) {
+        return this.mobileTitle
+      }
+      const metaTitle = this.$route && this.$route.meta && this.$route.meta.title
+      if (metaTitle) {
+        return metaTitle
+      }
+      const allList = [...this.showItems, ...this.hiddenItems]
+      const active = allList.find(item => item.path === this.navIndex)
+      return active ? active.title : '工作台'
     }
   },
   watch: {
     navManagerShow(val) {
       if (val == false) {
         this.changeNavIndex()
+      }
+    },
+    isMobileLayout(val) {
+      if (val) {
+        this.navManagerShow = false
       }
     }
   },
@@ -379,6 +489,10 @@ export default {
       if (this.navActiveIndex != navActiveIndex) {
         this.$store.commit('SET_NAVACTIVEINDEX', navActiveIndex)
       }
+    },
+
+    handleMobileQuickAdd() {
+      this.$emit('mobile-quick-add')
     },
 
     navItemsClick(path) {
@@ -530,6 +644,10 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+.navbar-wrapper {
+  width: 100%;
+}
+
 .navbar {
   height: 60px;
   min-height: 60px;
@@ -574,6 +692,71 @@ export default {
   .user-container:hover {
     .mark {
       color: #2486e4;
+    }
+  }
+}
+
+.navbar-mobile {
+  height: 60px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+
+  .mobile-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    .mobile-menu-icon {
+      font-size: 24px;
+      color: #2362fb;
+      margin-right: 12px;
+    }
+
+    .logo {
+      width: 120px;
+      height: 32px;
+      margin: 0;
+    }
+  }
+
+  .mobile-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    padding: 0 12px;
+  }
+
+  .mobile-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    .mobile-quick-add {
+      margin-right: 12px;
+    }
+
+    .el-badge {
+      margin-right: 12px;
+    }
+  }
+
+  .user-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .user-img {
+      margin-right: 6px;
+    }
+
+    .mark {
+      font-size: 14px;
+      color: #aaaaaa;
     }
   }
 }
