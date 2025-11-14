@@ -1,19 +1,39 @@
 <template>
-  <div class="navbar">
-    <img
-      v-src="logo"
-      :key="logo"
-      class="logo"
-      @click="enterCustoemBoard" >
-    <div class="nav-title">
-      系统设置
+  <div class="manager-navbar-wrapper">
+    <!-- PC 布局导航 -->
+    <div v-if="!isMobileLayout" class="navbar">
+      <img
+        v-src="logo"
+        :key="logo"
+        class="logo"
+        @click="enterCustoemBoard" >
+      <div class="nav-title">
+        系统设置
+      </div>
+      <div
+        class="back-home"
+        @click="enterHome">返回首页</div>
+      <div
+        class="go-out"
+        @click="enterLogin">退出系统</div>
     </div>
-    <div
-      class="back-home"
-      @click="enterHome">返回首页</div>
-    <div
-      class="go-out"
-      @click="enterLogin">退出系统</div>
+
+    <!-- Mobile 布局导航 -->
+    <div v-else class="manager-navbar-mobile">
+      <div class="mobile-left">
+        <i class="wk wk-menu mobile-menu-icon" @click="$emit('toggle-mobile-menu')" />
+        <img
+          v-src="logo"
+          :key="logo"
+          class="logo"
+          @click="enterCustoemBoard" >
+      </div>
+      <div class="mobile-title">{{ mobileTitle || '系统设置' }}</div>
+      <div class="mobile-actions">
+        <el-button size="mini" class="mobile-action" @click="enterHome">首页</el-button>
+        <el-button size="mini" type="danger" class="mobile-action" @click="enterLogin">退出</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -24,7 +44,15 @@ import { mapGetters } from 'vuex'
 export default {
   components: {},
   props: {
-    navIndex: String
+    navIndex: String,
+    isMobileLayout: {
+      type: Boolean,
+      default: false
+    },
+    mobileTitle: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {}
@@ -76,6 +104,10 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+.manager-navbar-wrapper {
+  width: 100%;
+}
+
 .navbar {
   height: 60px;
   min-height: 60px;
@@ -122,5 +154,48 @@ export default {
   font-size: 14px;
   cursor: pointer;
 }
-</style>
 
+.manager-navbar-mobile {
+  height: 60px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+
+  .mobile-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    .mobile-menu-icon {
+      font-size: 24px;
+      color: #2362fb;
+      margin-right: 12px;
+    }
+
+    .logo {
+      width: 120px;
+      height: 32px;
+      margin: 0;
+    }
+  }
+
+  .mobile-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .mobile-actions {
+    display: flex;
+    align-items: center;
+
+    .mobile-action {
+      margin-left: 8px;
+    }
+  }
+}
+</style>
