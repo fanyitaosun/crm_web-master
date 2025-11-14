@@ -82,6 +82,9 @@
 <script>
 import LoginByPwd from './component/LoginByPwd'
 import LoginQuickGuide from './component/LoginQuickGuide'
+import { isMobileDevice } from '@/utils'
+
+const MOBILE_LOGIN_URL = 'https://www.72crm.com/m/#/login'
 
 export default {
   name: 'Login',
@@ -101,20 +104,33 @@ export default {
       titleMap: {
         LoginByPwd: '欢迎登录',
         LoginQuickGuide: '使用帮助'
-      }
+      },
+      resizeListenerAttached: false
     }
   },
   watch: {},
   created() {
   },
   mounted() {
+    if (this.redirectToMobile()) return
+
     this.handleResize()
     window.addEventListener('resize', this.handleResize)
+    this.resizeListenerAttached = true
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize)
+    if (this.resizeListenerAttached) {
+      window.removeEventListener('resize', this.handleResize)
+    }
   },
   methods: {
+    redirectToMobile() {
+      if (isMobileDevice()) {
+        window.location.href = MOBILE_LOGIN_URL
+        return true
+      }
+      return false
+    },
     handleResize() {
       this.isMobile = window.innerWidth <= 768
       if (!this.isMobile) {
